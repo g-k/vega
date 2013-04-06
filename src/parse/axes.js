@@ -33,7 +33,24 @@ vg.parse.axes = (function() {
 
     // axis label formatting
     if (def.format !== undefined) {
-      axis.tickFormat(d3.format(def.format));
+      // Try to tell if percent is for a d3.time.format but not a
+      // d3.format precision
+      //
+      // note: d3.format doesn't use colon from match python mini formatting
+      //
+      // >>> '{:.2%}'.format(20.012) # python
+      // '2001.20%'
+      // > d3.format(':.2%')(20.012)
+      // "20.012"
+      // > d3.format('.2%')(20.012)
+      // "2001.20%"
+      //
+      var timeFormat = /%[aAbBcdeHIjmMLpSUwWxXyYZ%][0_-]?/;
+      if (timeFormat.test(def.format)) {
+        axis.tickFormat(d3.time.format(def.format));
+      } else {
+        axis.tickFormat(d3.format(def.format));
+      }
     }
 
     // axis tick subdivision
